@@ -14,11 +14,11 @@ export default function Layout(props: { children: React.ReactNode }) {
       />
       <main className="flex-1">{props.children}</main>
       <Footer
-        builtBy="Stack Auth"
-        builtByLink="https://stack-auth.com/"
-        githubLink="https://github.com/stack-auth/stack-template"
-        twitterLink="https://twitter.com/stack_auth"
-        linkedinLink="linkedin.com/company/stack-auth"
+        builtBy="Turbo Automations"
+        builtByLink="https://turboautomations.com/"
+           githubLink="https://github.com/turbo-automations"
+           twitterLink="https://twitter.com/turbo_automations"
+           linkedinLink="linkedin.com/company/turbo-automations"
       />
     </div>
   );

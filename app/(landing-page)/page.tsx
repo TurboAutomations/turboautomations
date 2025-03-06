@@ -27,8 +27,8 @@ export default async function IndexPage() {
       <Hero
         capsuleText="100% Open-source & Free"
         capsuleLink="https://stacktemplate.com"
-        title="A Multi-tenant Next.js Starter Template"
-        subtitle="Built for developers, by developers. Next.js + Shadcn UI + Stack Auth."
+        title="Turbo Automations"
+        subtitle="Streamline your business processes with custom automations. Eliminate repetitive tasks and manual workflows."
         primaryCtaText="Get Started"
         primaryCtaLink={stackServerApp.urls.signUp}
         secondaryCtaText="GitHub"
@@ -42,7 +42,7 @@ export default async function IndexPage() {
               rel="noreferrer"
               className="underline"
             >
-              Stack Auth
+              Turbo Automations
             </a>
           </>
         }
@@ -50,8 +50,8 @@ export default async function IndexPage() {
 
       <div id="features" />
       <FeatureGrid
-        title="Features"
-        subtitle="Unlock powerful capabilities for your project."
+        title="How Turbo Automations Works"
+        subtitle="Our platform makes it easy to automate your business processes and workflows."
         items={[
           {
             icon: (
@@ -59,9 +59,9 @@ export default async function IndexPage() {
                 <path d="M11.572 0c-.176 0-.31.001-.358.007a19.76 19.76 0 0 1-.364.033C7.443.346 4.25 2.185 2.228 5.012a11.875 11.875 0 0 0-2.119 5.243c-.096.659-.108.854-.108 1.747s.012 1.089.108 1.748c.652 4.506 3.86 8.292 8.209 9.695.779.25 1.6.422 2.534.525.363.04 1.935.04 2.299 0 1.611-.178 2.977-.577 4.323-1.264.207-.106.247-.134.219-.158-.02-.013-.9-1.193-1.955-2.62l-1.919-2.592-2.404-3.558a338.739 338.739 0 0 0-2.422-3.556c-.009-.002-.018 1.579-.023 3.51-.007 3.38-.01 3.515-.052 3.595a.426.426 0 0 1-.206.214c-.075.037-.14.044-.495.044H7.81l-.108-.068a.438.438 0 0 1-.157-.171l-.05-.106.006-4.703.007-4.705.072-.092a.645.645 0 0 1 .174-.143c.096-.047.134-.051.54-.051.478 0 .558.018.682.154.035.038 1.337 1.999 2.895 4.361a10760.433 10760.433 0 0 0 4.735 7.17l1.9 2.879.096-.063a12.317 12.317 0 0 0 2.466-2.163 11.944 11.944 0 0 0 2.824-6.134c.096-.66.108-.854.108-1.748 0-.893-.012-1.088-.108-1.747-.652-4.506-3.859-8.292-8.208-9.695a12.597 12.597 0 0 0-2.499-.523A33.119 33.119 0 0 0 11.573 0zm4.069 7.217c.347 0 .408.005.486.047a.473.473 0 0 1 .237.277c.018.06.023 1.365.018 4.304l-.006 4.218-.744-1.14-.746-1.14v-3.066c0-1.982.01-3.097.023-3.15a.478.478 0 0 1 .233-.296c.096-.05.13-.054.5-.054z" />
               </svg>
             ),
-            title: "Next.js 14",
+            title: "1. Define Your Process",
             description:
-              "Utilize the latest features: App Router, Layouts, Suspense.",
+              "Tell us about the business process you want to automate.",
           },
           {
             icon: (
@@ -95,9 +95,9 @@ export default async function IndexPage() {
                 ></line>
               </svg>
             ),
-            title: "Shadcn UI",
+            title: "2. We Build the Automation",
             description:
-              "Modern and fully customizable UI components based on Tailwind CSS.",
+              "Our team creates a custom automation solution tailored to your needs.",
           },
           {
             icon: (
@@ -112,25 +112,25 @@ export default async function IndexPage() {
                 <path d="M104.004 1.78785C101.751 0.662376 99.1002 0.663161 96.8483 1.78998L4.9201 47.7892C2.21103 49.1448 0.5 51.9143 0.5 54.9436V130.526C0.5 133.556 2.2123 136.327 4.92292 137.682L96.9204 183.67C99.1725 184.796 101.823 184.796 104.075 183.67L168.922 151.246C174.242 148.587 180.5 152.455 180.5 158.402V168.855C180.5 171.885 178.788 174.655 176.078 176.01L104.077 212.011C101.825 213.137 99.1745 213.137 96.9224 212.012L12.0771 169.598C6.75791 166.939 0.5 170.807 0.5 176.754V187.048C0.5 190.083 2.21689 192.856 4.93309 194.209L97.0051 240.072C99.2529 241.191 101.896 241.191 104.143 240.07L196.071 194.21C198.785 192.857 200.5 190.084 200.5 187.052V119.487C200.5 113.54 194.242 109.672 188.922 112.332L132.078 140.754C126.758 143.414 120.5 139.546 120.5 133.599V123.145C120.5 120.115 122.212 117.345 124.922 115.99L196.078 80.4124C198.788 79.0573 200.5 76.2872 200.5 73.257V54.9468C200.5 51.9158 198.787 49.1451 196.076 47.7904L104.004 1.78785Z" />
               </svg>
             ),
-            title: "Stack Auth",
+            title: "3. Monitor & Optimize",
             description:
-              "Comprehensive Authentication: OAuth, User Management, and more.",
+              "Track performance and make adjustments to improve efficiency.",
           },
-          {
-            icon: <Users className="h-12 w-12" />,
-            title: "Multi-tenancy & RBAC",
-            description: "Built-in Teams and Permissions.",
-          },
-          {
-            icon: <GitHubLogoIcon className="h-12 w-12" />,
-            title: "100% Open-source",
-            description: "Open-source and self-hostable codebase.",
-          },
-          {
-            icon: <ComponentIcon className="h-12 w-12" />,
-            title: "Modular Design",
-            description: "Easily extend and customize. No spaghetti code.",
-          },
+          // {
+          //   icon: <Users className="h-12 w-12" />,
+          //   title: "Multi-tenancy & RBAC",
+          //   description: "Built-in Teams and Permissions.",
+          // },
+          // {
+          //   icon: <GitHubLogoIcon className="h-12 w-12" />,
+          //   title: "100% Open-source",
+          //   description: "Open-source and self-hostable codebase.",
+          // },
+          // {
+          //   icon: <ComponentIcon className="h-12 w-12" />,
+          //   title: "Modular Design",
+          //   description: "Easily extend and customize. No spaghetti code.",
+          // },
         ]}
       />
 
@@ -187,3 +187,84 @@ export default async function IndexPage() {
     </>
   );
 }
+// import { FeatureGrid } from "@/components/features"
+// import { Hero } from "@/components/hero"
+// import { stackServerApp } from "@/stack"
+// import { Cog, LineChart, SquareStack } from "lucide-react"
+// import Link from "next/link"
+
+// export default async function IndexPage() {
+//   return (
+//     <>
+//       <Hero
+//         capsuleText="New"
+//         capsuleLink="#"
+//         title="The Business Automation Platform"
+//         subtitle="Streamline your business processes with custom automations. Eliminate repetitive tasks and manual workflows."
+//         primaryCtaText="Get Started"
+//         primaryCtaLink={stackServerApp.urls.signUp}
+//         secondaryCtaText="See How It Works"
+//         secondaryCtaLink="#how-it-works"
+//         credits={
+//           <>
+//             Make your organization <span className="text-blue-600 font-medium">more efficient</span>.
+//           </>
+//         }
+//       />
+
+//       <div id="how-it-works" />
+//       <FeatureGrid
+//         title="How Turbo Automations Works"
+//         subtitle="Our platform makes it easy to automate your business processes and workflows."
+//         items={[
+//           {
+//             icon: (
+//               <div className="bg-blue-100 p-4 rounded-full">
+//                 <SquareStack className="h-8 w-8 text-blue-600" />
+//               </div>
+//             ),
+//             title: "1. Define Your Process",
+//             description: "Tell us about the business process you want to automate.",
+//           },
+//           {
+//             icon: (
+//               <div className="bg-blue-100 p-4 rounded-full">
+//                 <Cog className="h-8 w-8 text-blue-600" />
+//               </div>
+//             ),
+//             title: "2. We Build the Automation",
+//             description: "Our team creates a custom automation solution tailored to your needs.",
+//           },
+//           {
+//             icon: (
+//               <div className="bg-blue-100 p-4 rounded-full">
+//                 <LineChart className="h-8 w-8 text-blue-600" />
+//               </div>
+//             ),
+//             title: "3. Monitor & Optimize",
+//             description: "Track performance and make adjustments to improve efficiency.",
+//           },
+//         ]}
+//       />
+
+//       {/* CTA Section */}
+//       <section className="container space-y-6 py-16 md:py-24 border-t border-gray-200">
+//         <div className="mx-auto flex max-w-4xl flex-col items-center space-y-4 text-center">
+//           <h2 className="text-3xl md:text-5xl font-bold">Ready to Transform Your Business?</h2>
+//           <p className="max-w-[85%] text-muted-foreground sm:text-xl">
+//             Join hundreds of businesses that have streamlined their operations with Turbo Automations.
+//           </p>
+//           <div className="mt-6">
+//             <Link
+//               href={stackServerApp.urls.signUp}
+//               className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 md:h-12 md:py-4 md:px-10 md:text-base"
+//             >
+//               Get Started Today
+//             </Link>
+//           </div>
+//         </div>
+//       </section>
+//     </>
+//   )
+// }
+
