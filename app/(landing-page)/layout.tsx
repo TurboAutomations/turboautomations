@@ -1,7 +1,8 @@
-import { Footer } from "@/components/footer";
-import { LandingPageHeader } from "@/components/landing-page-header";
+import { Footer } from "@/components/footer"
+import { LandingPageHeader } from "@/components/landing-page-header"
+import type { ReactNode } from "react"
 
-export default function Layout(props: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <LandingPageHeader
@@ -12,14 +13,15 @@ export default function Layout(props: { children: React.ReactNode }) {
           { title: "Github", href: "https://github.com/stack-auth/stack-template", external: true },
         ]}
       />
-      <main className="flex-1">{props.children}</main>
+      <main className="flex-1">{children}</main>
       <Footer
         builtBy="Turbo Automations"
         builtByLink="https://turboautomations.com/"
-           githubLink="https://github.com/turbo-automations"
-           twitterLink="https://twitter.com/turbo_automations"
-           linkedinLink="linkedin.com/company/turbo-automations"
+        githubLink="https://github.com/turbo-automations"
+        twitterLink="https://twitter.com/turbo_automations"
+        linkedinLink="https://linkedin.com/company/turbo-automations"
       />
     </div>
-  );
+  )
 }
+

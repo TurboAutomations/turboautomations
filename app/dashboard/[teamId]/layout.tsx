@@ -1,9 +1,11 @@
-'use client';
+"use client"
 
-import SidebarLayout, { SidebarItem } from "@/components/sidebar-layout";
-import { SelectedTeamSwitcher, useUser } from "@stackframe/stack";
-import { BadgePercent, BarChart4, Columns3, Globe, Locate, Settings2, ShoppingBag, ShoppingCart, Users } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import type React from "react"
+import { useParams } from "next/navigation"
+import SidebarLayout, { type SidebarItem } from "@/components/sidebar-layout"
+import { BarChart4, FileText, Globe, Play } from "lucide-react"
+import { useClientConfig } from "./client-config"
+import Image from "next/image"
 
 const navigationItems: SidebarItem[] = [
   {
@@ -13,92 +15,85 @@ const navigationItems: SidebarItem[] = [
     type: "item",
   },
   {
-    type: 'label',
-    name: 'Management',
+    type: "label",
+    name: "Management",
   },
   {
-    name: "Products",
-    href: "/products",
-    icon: ShoppingBag,
+    name: "Automations",
+    href: "/automations",
+    icon: Play,
     type: "item",
   },
   {
-    name: "People",
-    href: "/people",
-    icon: Users,
+    name: "Reports",
+    href: "/reports",
+    icon: FileText,
     type: "item",
   },
   {
-    name: "Segments",
-    href: "/segments",
-    icon: Columns3,
-    type: "item",
-  },
-  {
-    name: "Regions",
-    href: "/regions",
-    icon: Locate,
-    type: "item",
-  },
-  {
-    type: 'label',
-    name: 'Monetization',
-  },
-  {
+    type: "label",
     name: "Revenue",
-    href: "/revenue",
+  },
+  {
+    name: "Monetization",
+    href: "/monetization",
     icon: BarChart4,
     type: "item",
   },
-  {
-    name: "Orders",
-    href: "/orders",
-    icon: ShoppingCart,
-    type: "item",
-  },
-  {
-    name: "Discounts",
-    href: "/discounts",
-    icon: BadgePercent,
-    type: "item",
-  },
-  {
-    type: 'label',
-    name: 'Settings',
-  },
-  {
-    name: "Configuration",
-    href: "/configuration",
-    icon: Settings2,
-    type: "item",
-  },
-];
+]
 
 export default function Layout(props: { children: React.ReactNode }) {
-  const params = useParams<{ teamId: string }>();
-  const user = useUser({ or: 'redirect' });
-  const team = user.useTeam(params.teamId);
-  const router = useRouter();
+  const params = useParams<{ teamId: string }>()
+  const clientConfig = useClientConfig()
 
-  if (!team) {
-    router.push('/dashboard');
-    return null;
+  // Custom sidebar top component with client logo
+  const SidebarTop = () => {
+    if (clientConfig) {
+      return (
+        <div className="flex items-center gap-2 px-4 py-2">
+          {clientConfig.logo && (
+            <div className="relative h-8 w-8 overflow-hidden rounded">
+              <Image
+                src={clientConfig.logo || "/placeholder.svg"}
+                alt={`${clientConfig.name} logo`}
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+          <div className="flex flex-col">
+            <span className="font-medium">{clientConfig?.name || "Client Dashboard"}</span>
+            <span className="text-xs text-muted-foreground">Client Dashboard</span>
+          </div>
+        </div>
+      )
+    }
+
+    // Fallback to teamId
+    return (
+      <div className="flex items-center gap-2 px-4 py-2">
+        <div className="flex flex-col">
+          <span className="font-medium">{params.teamId}</span>
+          <span className="text-xs text-muted-foreground">Client Dashboard</span>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <SidebarLayout 
+    <SidebarLayout
       items={navigationItems}
-      basePath={`/dashboard/${team.id}`}
-      sidebarTop={<SelectedTeamSwitcher 
-        selectedTeam={team}
-        urlMap={(team) => `/dashboard/${team.id}`}
-      />}
-      baseBreadcrumb={[{
-        title: team.displayName,
-        href: `/dashboard/${team.id}`,
-      }]}
+      basePath={`/dashboard/${params.teamId}`}
+      sidebarTop={<SidebarTop />}
+      baseBreadcrumb={[
+        {
+          title: clientConfig?.name || params.teamId,
+          href: `/dashboard/${params.teamId}`,
+        },
+      ]}
     >
       {props.children}
     </SidebarLayout>
-  );
+  )
 }
+
