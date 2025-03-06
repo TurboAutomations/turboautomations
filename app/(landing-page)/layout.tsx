@@ -14,7 +14,7 @@ export default function Layout(props: { children: React.ReactNode }) {
       />
       <main className="flex-1">{props.children}</main>
       <Footer
-        builtBy="Turbo Automations"
+        builtBy="Turbo Automations LLC"
         builtByLink="https://turboautomations.com/"
            githubLink="https://github.com/turbo-automations"
            twitterLink="https://twitter.com/turbo_automations"
