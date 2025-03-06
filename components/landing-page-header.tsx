@@ -8,25 +8,26 @@ import * as React from "react"
 import { ColorModeSwitcher } from "./color-mode-switcher"
 import { buttonVariants } from "./ui/button"
 
-export function LandingPageHeader() {
+interface NavItem {
+  title: string
+  href: string
+  disabled?: boolean
+  external?: boolean
+}
+
+export function LandingPageHeader(props: {
+  items?: NavItem[]
+}) {
   const app = useStackApp()
   const user = useUser()
   const [showMobileMenu, setShowMobileMenu] = React.useState<boolean>(false)
 
-  const navigationItems = [
+  // Use provided items or fallback to default navigation
+  const navigationItems = props.items || [
     { title: "Blog", href: "/blog" },
     { title: "Customers", href: "/customers" },
     { title: "Pricing", href: "/#pricing" },
-    {
-      title: "Resources",
-      href: "#",
-      dropdown: true,
-      items: [
-        { title: "Documentation", href: "/docs" },
-        { title: "API Reference", href: "/api" },
-        { title: "Guides", href: "/guides" },
-      ],
-    },
+    { title: "Resources", href: "#" },
     { title: "Talk to us", href: "/contact" },
   ]
 
@@ -35,18 +36,23 @@ export function LandingPageHeader() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="font-bold text-xl">
-            Turbo Automations
+            Turbo
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
             {navigationItems.map((item, index) => (
               <div key={index} className="relative group">
                 <Link
-                  href={item.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1"
+                  href={item.disabled ? "#" : item.href}
+                  className={cn(
+                    "text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1",
+                    item.disabled && "cursor-not-allowed opacity-60",
+                  )}
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noreferrer" : undefined}
                 >
                   {item.title}
-                  {item.dropdown && <ChevronDown className="h-4 w-4" />}
+                  {item.title === "Resources" && <ChevronDown className="h-4 w-4" />}
                 </Link>
               </div>
             ))}
