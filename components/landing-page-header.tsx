@@ -36,7 +36,7 @@ export function LandingPageHeader(props: {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="font-bold text-xl">
-            Turbo
+            Turbo Automations
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
