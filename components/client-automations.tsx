@@ -1,24 +1,95 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Play } from "lucide-react"
+import { supabase } from "@/lib/supabase-client"
 
 export function ClientAutomations({
   clientId,
-  initialAutomations,
 }: {
   clientId: string
-  initialAutomations: any[]
 }) {
-  // In a real app, you would fetch the client config from your API
-  const clientConfig = {
-    id: clientId,
-    name: clientId === "uber-eats" ? "Uber Eats" : clientId,
-    primaryColor: clientId === "uber-eats" ? "#06C167" : "#0066FF",
+  const [clientProfile, setClientProfile] = useState<any>(null)
+  const [automations, setAutomations] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Get client profile
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", clientId)
+          .single()
+
+        if (profileError) throw profileError
+        setClientProfile(profile)
+
+        // First, get the client's automation assignments
+        const { data: clientAutomationData, error: clientAutomationError } = await supabase
+          .from("client_automations")
+          .select("id, automation_id, status, last_run, next_run")
+          .eq("client_id", clientId)
+
+        if (clientAutomationError) throw clientAutomationError
+
+        if (clientAutomationData.length === 0) {
+          setAutomations([])
+          setIsLoading(false)
+          return
+        }
+
+        // Get the automation details for each assigned automation
+        const automationIds = clientAutomationData.map((item) => item.automation_id)
+        const { data: automationDetails, error: automationError } = await supabase
+          .from("automations")
+          .select("id, name, description, type")
+          .in("id", automationIds)
+
+        if (automationError) throw automationError
+
+        // Combine the data
+        const formattedAutomations = clientAutomationData.map((clientAutomation) => {
+          const automationDetail = automationDetails.find((detail) => detail.id === clientAutomation.automation_id)
+
+          return {
+            id: clientAutomation.id,
+            name: automationDetail?.name || "Unknown Automation",
+            description: automationDetail?.description || "",
+            type: automationDetail?.type || "Unknown Type",
+            status: clientAutomation.status,
+            lastRun: clientAutomation.last_run ? new Date(clientAutomation.last_run).toLocaleString() : null,
+            nextRun: clientAutomation.next_run ? new Date(clientAutomation.next_run).toLocaleString() : null,
+          }
+        })
+
+        setAutomations(formattedAutomations)
+      } catch (err: any) {
+        console.error("Error loading client automations:", err)
+        setError(err.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
+  }, [clientId])
+
+  if (isLoading) {
+    return <div className="p-4">Loading automations...</div>
   }
 
-  const automations = initialAutomations
+  if (error) {
+    return (
+      <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md">
+        <p className="text-red-800 dark:text-red-300">Error: {error}</p>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -27,17 +98,13 @@ export function ClientAutomations({
           <h1 className="text-3xl font-bold tracking-tight">Automations</h1>
           <p className="text-lg text-muted-foreground">Manage and run your custom automations</p>
         </div>
-        <Button className="hover:opacity-90" style={{ backgroundColor: clientConfig.primaryColor }}>
-          Request New Automation
-        </Button>
+        <Button className="bg-blue-600 hover:bg-blue-700">Request New Automation</Button>
       </div>
 
       {automations.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 border rounded-xl p-6 text-center">
           <p className="text-muted-foreground mb-4">No automations have been set up yet.</p>
-          <Button className="hover:opacity-90" style={{ backgroundColor: clientConfig.primaryColor }}>
-            Request Your First Automation
-          </Button>
+          <Button className="bg-blue-600 hover:bg-blue-700">Request Your First Automation</Button>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
@@ -75,10 +142,7 @@ export function ClientAutomations({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-2">
-                  <div
-                    className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-white"
-                    style={{ backgroundColor: clientConfig.primaryColor }}
-                  >
+                  <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-white bg-blue-600">
                     {automation.status}
                   </div>
                   <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary text-secondary-foreground">
@@ -101,7 +165,7 @@ export function ClientAutomations({
                       Last run: {automation.lastRun}
                     </div>
                   )}
-                  {automation.schedule && (
+                  {automation.nextRun && (
                     <div className="flex items-center gap-2">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -119,15 +183,12 @@ export function ClientAutomations({
                           strokeLinejoin="round"
                         />
                       </svg>
-                      Schedule: {automation.schedule}
+                      Next run: {automation.nextRun}
                     </div>
                   )}
                 </div>
 
-                <Button
-                  className="w-full text-white hover:opacity-90"
-                  style={{ backgroundColor: clientConfig.primaryColor }}
-                >
+                <Button className="w-full text-white bg-blue-600 hover:bg-blue-700">
                   <Play className="mr-2 h-4 w-4" />
                   Run Now
                 </Button>
