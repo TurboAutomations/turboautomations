@@ -11,7 +11,7 @@ export function Footer({
   className?: string
   githubLink?: string
   twitterLink?: string
-  linkedinLink?: string
+  linkedinLink?: string 
 }) {
   const hasSocialLinks = githubLink || twitterLink || linkedinLink
 
@@ -65,4 +65,3 @@ export function Footer({
     </footer>
   )
 }
-
