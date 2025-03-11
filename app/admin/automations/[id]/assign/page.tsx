@@ -1,94 +1,192 @@
 "use client"
 
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useParams, useRouter } from "next/navigation"
-import { useState } from "react"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { supabase } from "@/lib/supabase-client"
+import { assignAutomationToClients } from "@/lib/actions/automation-actions"
 
-export default function AssignAutomationPage() {
-  const params = useParams<{ id: string }>()
+interface Client {
+  id: string
+  name: string
+  isAssigned: boolean
+}
+
+export default function AssignAutomationPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { id: automationId } = params
+  const [clients, setClients] = useState<Client[]>([])
+  const [automationName, setAutomationName] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [selectedClients, setSelectedClients] = useState<string[]>([])
+  const [notification, setNotification] = useState<{
+    type: "success" | "error"
+    message: string
+  } | null>(null)
 
-  // In a real app, you would fetch this data from your API
-  const automation = {
-    id: params.id,
-    name: params.id === "daily-sales" ? "Daily Sales Report" : "Customer Data Sync",
-    description:
-      params.id === "daily-sales"
-        ? "Generates a daily sales report from CRM data and emails it to stakeholders"
-        : "Synchronizes customer data between CRM and marketing platform",
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Fetch automation details
+        const { data: automation, error: automationError } = await supabase
+          .from("automations")
+          .select("name")
+          .eq("id", automationId)
+          .single()
+
+        if (automationError) throw automationError
+        setAutomationName(automation.name)
+
+        // Fetch all clients
+        const { data: teams, error: teamsError } = await supabase.from("teams").select("id, name")
+
+        if (teamsError) throw teamsError
+
+        // Fetch existing assignments
+        const { data: assignments, error: assignmentsError } = await supabase
+          .from("team_automations")
+          .select("team_id")
+          .eq("automation_id", automationId)
+
+        if (assignmentsError) throw assignmentsError
+
+        // Create a set of assigned team IDs for quick lookup
+        const assignedTeamIds = new Set(assignments?.map((a) => a.team_id) || [])
+
+        // Mark clients as assigned if they already have this automation
+        const clientsWithAssignmentStatus =
+          teams?.map((team) => ({
+            id: team.id,
+            name: team.name,
+            isAssigned: assignedTeamIds.has(team.id),
+          })) || []
+
+        setClients(clientsWithAssignmentStatus)
+
+        // Initialize selected clients with those that are already assigned
+        setSelectedClients(clientsWithAssignmentStatus.filter((client) => client.isAssigned).map((client) => client.id))
+
+        setIsLoading(false)
+      } catch (error: any) {
+        console.error("Error fetching data:", error)
+        setNotification({
+          type: "error",
+          message: error.message || "Failed to load data",
+        })
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [automationId])
+
+  const handleClientToggle = (clientId: string) => {
+    setSelectedClients((prev) => {
+      if (prev.includes(clientId)) {
+        return prev.filter((id) => id !== clientId)
+      } else {
+        return [...prev, clientId]
+      }
+    })
   }
 
-  // In a real app, you would fetch this data from your API
-  const clients = [
-    { id: "uber-eats", name: "Uber Eats", assigned: params.id === "daily-sales" },
-    { id: "doordash", name: "DoorDash", assigned: false },
-    { id: "grubhub", name: "Grubhub", assigned: false },
-  ]
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSaving(true)
+    setNotification(null)
 
-  const [assignedClients, setAssignedClients] = useState(
-    clients.filter((client) => client.assigned).map((client) => client.id),
-  )
-
-  const toggleClient = (clientId: string) => {
-    setAssignedClients((prev) => (prev.includes(clientId) ? prev.filter((id) => id !== clientId) : [...prev, clientId]))
+    try {
+      await assignAutomationToClients(automationId, selectedClients)
+      setNotification({
+        type: "success",
+        message: "Automation assigned successfully",
+      })
+      // Redirect after a short delay to show the success message
+      setTimeout(() => {
+        router.push(`/admin/automations/${automationId}`)
+      }, 1500)
+    } catch (error: any) {
+      console.error("Error assigning automation:", error)
+      setNotification({
+        type: "error",
+        message: error.message || "Failed to assign automation",
+      })
+      setIsSaving(false)
+    }
   }
 
-  const handleSave = async () => {
-    // In a real app, you would send this data to your API
-    console.log(`Assigning automation ${params.id} to clients:`, assignedClients)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Redirect back to the automations list
-    router.push("/admin/automations")
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10">
+        <div className="flex justify-center items-center h-64">
+          <p>Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="container py-6">
-      <h1 className="text-3xl font-bold tracking-tight mb-2">Assign Automation to Clients</h1>
-      <p className="text-muted-foreground mb-6">Select which clients should have access to this automation</p>
+    <div className="container mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-6">Assign Automation</h1>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>{automation.name}</CardTitle>
-          <p className="text-muted-foreground">{automation.description}</p>
-        </CardHeader>
-      </Card>
+      {notification && (
+        <div
+          className={`mb-6 p-4 rounded-md ${
+            notification.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+          }`}
+        >
+          <p className="font-medium">{notification.type === "success" ? "Success" : "Error"}</p>
+          <p>{notification.message}</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Available Clients</CardTitle>
+          <CardTitle>Assign "{automationName}" to Clients</CardTitle>
+          <CardDescription>Select which clients should have access to this automation.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {clients.map((client) => (
-              <div key={client.id} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id={`client-${client.id}`}
-                  checked={assignedClients.includes(client.id)}
-                  onChange={() => toggleClient(client.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor={`client-${client.id}`} className="text-sm font-medium">
-                  {client.name}
-                </label>
-              </div>
-            ))}
-          </div>
-        </CardContent>
+        <form onSubmit={handleSubmit}>
+          <CardContent>
+            <div className="space-y-4">
+              {clients.length === 0 ? (
+                <p>No clients available. Create clients first.</p>
+              ) : (
+                clients.map((client) => (
+                  <div key={client.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`client-${client.id}`}
+                      checked={selectedClients.includes(client.id)}
+                      onCheckedChange={() => handleClientToggle(client.id)}
+                    />
+                    <Label htmlFor={`client-${client.id}`}>{client.name}</Label>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(`/admin/automations/${automationId}`)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSaving || clients.length === 0}>
+              {isSaving ? "Saving..." : "Save Assignments"}
+            </Button>
+          </CardFooter>
+        </form>
       </Card>
-
-      <div className="flex justify-end gap-4 mt-6">
-        <Button variant="outline" onClick={() => router.push("/admin/automations")}>
-          Cancel
-        </Button>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSave}>
-          Save Assignments
-        </Button>
-      </div>
     </div>
   )
 }

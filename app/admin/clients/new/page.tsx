@@ -7,122 +7,125 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { supabaseAdmin } from "@/lib/supabase-admin"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { createClient } from "@/lib/actions/client-actions"
 
-export default function NewAutomationPage() {
+export default function NewClientPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    contactName: "",
+    email: "",
+    password: "",
+  })
+  const [notification, setNotification] = useState<{
+    type: "success" | "error"
+    message: string
+  } | null>(null)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError(null)
-
-    const formData = new FormData(e.currentTarget)
-    const name = formData.get("name") as string
-    const description = formData.get("description") as string
-    const type = formData.get("type") as string
-    const scriptContent = formData.get("scriptContent") as string
+    setNotification(null)
 
     try {
-      const { error } = await supabaseAdmin.from("automations").insert({
-        name,
-        description,
-        type,
-        script_content: scriptContent,
+      await createClient(formData)
+      setNotification({
+        type: "success",
+        message: "Client created successfully",
       })
-
-      if (error) throw error
-
-      setSuccess(true)
-      // Redirect after a short delay
+      // Redirect after a short delay to show the success message
       setTimeout(() => {
-        router.push("/admin/automations")
-        router.refresh()
-      }, 2000)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
+        router.push("/admin/clients")
+      }, 1500)
+    } catch (error: any) {
+      console.error("Error creating client:", error)
+      setNotification({
+        type: "error",
+        message: error.message || "Failed to create client. Please try again.",
+      })
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="container py-6">
-      <h1 className="text-3xl font-bold tracking-tight mb-6">Create New Automation</h1>
+    <div className="container mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-6">Add New Client</h1>
 
-      {success ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-md">
-              <p className="text-green-800 dark:text-green-300">Automation created successfully! Redirecting...</p>
+      {notification && (
+        <div
+          className={`mb-6 p-4 rounded-md ${
+            notification.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+          }`}
+        >
+          <p className="font-medium">{notification.type === "success" ? "Success" : "Error"}</p>
+          <p>{notification.message}</p>
+        </div>
+      )}
+
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Client Information</CardTitle>
+          <CardDescription>
+            Create a new client account and provide login credentials for their dashboard.
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Client/Company Name</Label>
+              <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contactName">Contact Person</Label>
+              <Input
+                id="contactName"
+                name="contactName"
+                value={formData.contactName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+              <p className="text-sm text-muted-foreground">This email will be used for login and communications.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Initial Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                minLength={8}
+              />
+              <p className="text-sm text-muted-foreground">The client will be able to change this after first login.</p>
             </div>
           </CardContent>
-        </Card>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Automation Name</Label>
-                  <Input id="name" name="name" placeholder="e.g., Daily Sales Report" required />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input id="description" name="description" placeholder="What does this automation do?" required />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="type">Type</Label>
-                  <Input id="type" name="type" placeholder="e.g., Report Generation, Data Integration" required />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Automation Script</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-2">
-                  <Label htmlFor="scriptContent">Script Content</Label>
-                  <Textarea
-                    id="scriptContent"
-                    name="scriptContent"
-                    rows={10}
-                    className="min-h-[200px] font-mono"
-                    placeholder="// Enter your automation script here"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md text-red-800 dark:text-red-300 text-sm">
-                {error}
-              </div>
-            )}
-
-            <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" onClick={() => router.push("/admin/automations")}>
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create Automation"}
-              </Button>
-            </div>
-          </div>
+          <CardFooter className="flex justify-between">
+            <Button type="button" variant="outline" onClick={() => router.push("/admin/clients")} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Client"}
+            </Button>
+          </CardFooter>
         </form>
-      )}
+      </Card>
     </div>
   )
 }

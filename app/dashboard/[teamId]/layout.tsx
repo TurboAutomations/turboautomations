@@ -1,99 +1,50 @@
-"use client"
-
 import type React from "react"
-import { useParams } from "next/navigation"
-import SidebarLayout, { type SidebarItem } from "@/components/sidebar-layout"
-import { BarChart4, FileText, Globe, Play } from "lucide-react"
-import { useClientConfig } from "./client-config"
-import Image from "next/image"
+import { supabase } from "@/lib/supabase-client"
+import { redirect } from "next/navigation"
+import { ClientConfig } from "./client-config"
 
-const navigationItems: SidebarItem[] = [
-  {
-    name: "Overview",
-    href: "/",
-    icon: Globe,
-    type: "item",
-  },
-  {
-    type: "label",
-    name: "Management",
-  },
-  {
-    name: "Automations",
-    href: "/automations",
-    icon: Play,
-    type: "item",
-  },
-  {
-    name: "Reports",
-    href: "/reports",
-    icon: FileText,
-    type: "item",
-  },
-  {
-    type: "label",
-    name: "Revenue",
-  },
-  {
-    name: "Monetization",
-    href: "/monetization",
-    icon: BarChart4,
-    type: "item",
-  },
-]
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode
+  params: { teamId: string }
+}) {
+  const { teamId } = params
 
-export default function Layout(props: { children: React.ReactNode }) {
-  const params = useParams<{ teamId: string }>()
-  const clientConfig = useClientConfig()
+  // Get the current user
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  if (!session) {
+    redirect("/login")
+  }
 
-  // Custom sidebar top component with client logo
-  const SidebarTop = () => {
-    if (clientConfig) {
-      return (
-        <div className="flex items-center gap-2 px-4 py-2">
-          {clientConfig.logo && (
-            <div className="relative h-8 w-8 overflow-hidden rounded">
-              <Image
-                src={clientConfig.logo || "/placeholder.svg"}
-                alt={`${clientConfig.name} logo`}
-                fill
-                className="object-contain"
-              />
-            </div>
-          )}
-          <div className="flex flex-col">
-            <span className="font-medium">{clientConfig?.name || "Client Dashboard"}</span>
-            <span className="text-xs text-muted-foreground">Client Dashboard</span>
-          </div>
-        </div>
-      )
-    }
+  // Fetch the user's profile to ensure they have access to this team
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("team_id")
+    .eq("id", session.user.id)
+    .single()
 
-    // Fallback to teamId
-    return (
-      <div className="flex items-center gap-2 px-4 py-2">
-        <div className="flex flex-col">
-          <span className="font-medium">{params.teamId}</span>
-          <span className="text-xs text-muted-foreground">Client Dashboard</span>
-        </div>
-      </div>
-    )
+  if (profileError || !profile || profile.team_id !== teamId) {
+    console.error("Error fetching profile or unauthorized access:", profileError)
+    redirect("/dashboard")
+  }
+
+  // Fetch the team details
+  const { data: team, error: teamError } = await supabase.from("teams").select("name").eq("id", teamId).single()
+
+  if (teamError || !team) {
+    console.error("Error fetching team:", teamError)
+    redirect("/dashboard")
   }
 
   return (
-    <SidebarLayout
-      items={navigationItems}
-      basePath={`/dashboard/${params.teamId}`}
-      sidebarTop={<SidebarTop />}
-      baseBreadcrumb={[
-        {
-          title: clientConfig?.name || params.teamId,
-          href: `/dashboard/${params.teamId}`,
-        },
-      ]}
-    >
-      {props.children}
-    </SidebarLayout>
+    <div className="flex min-h-screen flex-col">
+      <ClientConfig teamId={teamId} teamName={team.name} />
+      <div className="flex-1">{children}</div>
+    </div>
   )
 }
 

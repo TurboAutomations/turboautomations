@@ -1,20 +1,13 @@
-import { supabaseAdmin } from "@/lib/supabase-admin"
+import { supabase } from "@/lib/supabase-client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Users } from "lucide-react"
-import { revalidatePath } from "next/cache"
 
 // This is a server component
 export default async function AdminClientsPage() {
-  // Use supabaseAdmin to fetch all clients
-  const { data: clients, error } = await supabaseAdmin
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false })
-
-  // Force revalidation of this page
-  revalidatePath("/admin/clients")
+  // Fetch all clients
+  const { data: clients, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false })
 
   return (
     <div className="container space-y-6 p-6">

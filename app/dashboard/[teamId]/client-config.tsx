@@ -1,59 +1,60 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
-// This is a simple client configuration store
-// In a real app, you would fetch this from your database
-type ClientConfig = {
-  id: string
-  name: string
-  logo: string
-  primaryColor: string
-  secondaryColor: string
-  automations: {
-    id: string
-    name: string
-    description: string
-    type: string
-    lastRun?: string
-    schedule?: string
-    status: "active" | "inactive" | "error"
-  }[]
-}
+export function ClientConfig({ teamId, teamName }: { teamId: string; teamName: string }) {
+  const pathname = usePathname()
 
-const clientConfigs: Record<string, ClientConfig> = {
-  "uber-eats": {
-    id: "uber-eats",
-    name: "Uber Eats",
-    logo: "/clients/uber-eats-logo.svg", // You would replace this with the actual logo path
-    primaryColor: "#06C167", // Uber Eats green
-    secondaryColor: "#142328", // Uber Eats dark color
-    automations: [
-      {
-        id: "daily-sales",
-        name: "Daily Sales Report",
-        description: "Generates a daily sales report from CRM data and emails it to stakeholders",
-        type: "Report Generation",
-        lastRun: "Today at 2:30 PM",
-        schedule: "Daily at 2:00 PM",
-        status: "active",
-      },
-    ],
-  },
-}
+  const navItems = [
+    {
+      name: "Dashboard",
+      href: `/dashboard/${teamId}`,
+    },
+    {
+      name: "Automations",
+      href: `/dashboard/${teamId}/automations`,
+    },
+    {
+      name: "Settings",
+      href: `/dashboard/${teamId}/settings`,
+    },
+  ]
 
-export function useClientConfig() {
-  const params = useParams<{ teamId: string }>()
-  const [clientConfig, setClientConfig] = useState<ClientConfig | null>(null)
-
-  useEffect(() => {
-    // In a real app, you would fetch this from your API
-    // For now, we'll just use the teamId to look up the client config
-    const config = clientConfigs[params.teamId] || null
-    setClientConfig(config)
-  }, [params.teamId])
-
-  return clientConfig
+  return (
+    <header className="bg-background border-b">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <h1 className="text-xl font-bold">{teamName}</h1>
+            </div>
+            <nav className="ml-10 flex items-center space-x-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium rounded-md",
+                    pathname === item.href
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                  )}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center">
+            <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">
+              Logout
+            </Link>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
 }
 

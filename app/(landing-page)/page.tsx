@@ -1,7 +1,6 @@
 import { FeatureGrid } from "@/components/features"
 import { Hero } from "@/components/hero"
 import { PricingGrid } from "@/components/pricing"
-import { stackServerApp } from "@/stack"
 import { ClipboardList, Cog, LineChart } from "lucide-react"
 
 export default async function IndexPage() {
@@ -24,8 +23,8 @@ export default async function IndexPage() {
             Make your organization <span className="text-blue-600">more efficient</span>.
           </>
         }
-        primaryCtaText="Get Started"
-        primaryCtaLink={stackServerApp.urls.signUp}
+        primaryCtaText="Start Chat"
+        primaryCtaLink="https://wa.link/hg2u97"
         secondaryCtaText="See How It Works"
         secondaryCtaLink="#how-it-works"
       />
@@ -33,32 +32,20 @@ export default async function IndexPage() {
       <div id="how-it-works" />
       <FeatureGrid
         title="How Turbo Automations Works"
-        subtitle="Our platform makes it easy to automate your business processes and workflows."
+        subtitle="We build custom automation solutions that save you time, reduce errors, and cut operational costs"
         items={[
           {
-            icon: (
-              <div className="bg-blue-100 p-4 rounded-full">
-                <ClipboardList className="h-8 w-8 text-blue-600" />
-              </div>
-            ),
+            icon: <ClipboardList className="h-5 w-5" />,
             title: "1. Define Your Process",
             description: "Tell us about the business process you want to automate.",
           },
           {
-            icon: (
-              <div className="bg-blue-100 p-4 rounded-full">
-                <Cog className="h-8 w-8 text-blue-600" />
-              </div>
-            ),
+            icon: <Cog className="h-5 w-5" />,
             title: "2. We Build the Automation",
             description: "Our team creates a custom automation solution tailored to your needs.",
           },
           {
-            icon: (
-              <div className="bg-blue-100 p-4 rounded-full">
-                <LineChart className="h-8 w-8 text-blue-600" />
-              </div>
-            ),
+            icon: <LineChart className="h-5 w-5" />,
             title: "3. Monitor & Optimize",
             description: "Track performance and make adjustments to improve efficiency.",
           },
@@ -67,46 +54,59 @@ export default async function IndexPage() {
 
       <PricingGrid
         title="Pricing"
-        subtitle="Flexible plans for every team."
+        subtitle="Affordable automation solutions for businesses of all sizes."
         items={[
           {
-            title: "Basic",
-            price: "Free",
-            description: "For individuals and small projects.",
-            features: ["Full access to platform", "Community support", "Free forever", "No credit card required"],
-            buttonText: "Get Started",
-            buttonHref: stackServerApp.urls.signUp,
+            title: "Starter",
+            price: "$49",
+            period: "per automation / month",
+            description: "For small businesses with simple automation needs.",
+            features: [
+              "Up to 3 simple automations",
+              "Basic data integrations",
+              "Email notifications",
+              "Standard support",
+              "Weekly execution schedule",
+            ],
+            buttonText: "Start Chat",
+            buttonHref: "https://wa.link/hg2u97",
           },
           {
-            title: "Pro",
-            price: "$0.00",
-            description: "Ideal for growing teams and businesses.",
+            title: "Professional",
+            price: "$99",
+            period: "per automation / month",
+            description: "For growing businesses with moderate complexity.",
             features: [
-              "All Basic features",
+              "Up to 10 automations",
+              "Advanced data integrations",
+              "Email & SMS notifications",
               "Priority support",
-              "Advanced automations",
-              "Team collaboration",
-              "API access",
+              "Daily execution schedule",
+              "Custom reporting",
             ],
-            buttonText: "Upgrade to Pro",
+            buttonText: "Start Chat",
             isPopular: true,
-            buttonHref: stackServerApp.urls.signUp,
+            buttonHref: "https://wa.link/hg2u97",
           },
           {
             title: "Enterprise",
             price: "Custom",
-            description: "For large organizations.",
+            period: "tailored pricing",
+            description: "For organizations with complex automation needs.",
             features: [
-              "All Pro features",
+              "Unlimited automations",
+              "Enterprise integrations",
+              "Advanced notifications",
               "Dedicated support",
-              "Custom integrations",
-              "Advanced security",
+              "Custom execution schedule",
+              "Advanced security features",
               "SLA guarantees",
             ],
             buttonText: "Contact Us",
-            buttonHref: stackServerApp.urls.signUp,
+            buttonHref: "https://wa.link/hg2u97",
           },
         ]}
+        footerText="All prices are in USD. Discounts available for annual billing. Complex automations may require custom pricing."
       />
     </>
   )
