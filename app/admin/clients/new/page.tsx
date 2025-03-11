@@ -14,9 +14,10 @@ export default function NewClientPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: "",
+    companyName: "",
     contactName: "",
     email: "",
+    phone: "",
     password: "",
   })
   const [notification, setNotification] = useState<{
@@ -36,13 +37,16 @@ export default function NewClientPage() {
 
     try {
       await createClient(formData)
+
       setNotification({
         type: "success",
         message: "Client created successfully",
       })
+
       // Redirect after a short delay to show the success message
       setTimeout(() => {
         router.push("/admin/clients")
+        router.refresh()
       }, 1500)
     } catch (error: any) {
       console.error("Error creating client:", error)
@@ -50,6 +54,7 @@ export default function NewClientPage() {
         type: "error",
         message: error.message || "Failed to create client. Please try again.",
       })
+    } finally {
       setIsLoading(false)
     }
   }
@@ -81,8 +86,14 @@ export default function NewClientPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Client/Company Name</Label>
-              <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+              <Label htmlFor="companyName">Client/Company Name</Label>
+              <Input
+                id="companyName"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="space-y-2">
@@ -100,6 +111,11 @@ export default function NewClientPage() {
               <Label htmlFor="email">Email Address</Label>
               <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
               <p className="text-sm text-muted-foreground">This email will be used for login and communications.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} />
             </div>
 
             <div className="space-y-2">

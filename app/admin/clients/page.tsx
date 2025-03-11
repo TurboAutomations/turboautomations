@@ -1,89 +1,103 @@
-import { supabase } from "@/lib/supabase-client"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Users } from "lucide-react"
+"use client"
 
-// This is a server component
-export default async function AdminClientsPage() {
-  // Fetch all clients
-  const { data: clients, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false })
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { supabase } from "@/lib/supabase-client"
+import { PlusCircle, Users } from "lucide-react"
+
+export default function ClientsPage() {
+  const [clients, setClients] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    async function fetchClients() {
+      try {
+        setLoading(true)
+
+        // Fetch clients from profiles table where role is 'client'
+        const { data, error } = await supabase.from("profiles").select("*").eq("role", "client")
+
+        if (error) throw error
+
+        setClients(data || [])
+      } catch (error) {
+        console.error("Error fetching clients:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchClients()
+  }, [])
+
+  // Function to generate initials for avatar
+  const getInitials = (name: string) => {
+    if (!name) return "CL"
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2)
+  }
 
   return (
-    <div className="container space-y-6 p-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Manage Clients</h1>
-          <p className="text-lg text-muted-foreground">Create and manage client accounts</p>
-        </div>
-        <Link href="/admin/clients/new">
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="mr-2 h-4 w-4" />
-            Add New Client
-          </Button>
-        </Link>
+    <div className="container mx-auto py-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Clients</h1>
+        <Button onClick={() => router.push("/admin/clients/new")}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add Client
+        </Button>
       </div>
 
-      {error ? (
-        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md">
-          <p className="text-red-800 dark:text-red-300">Error loading clients: {error.message}</p>
-        </div>
-      ) : clients && clients.length > 0 ? (
-        <div className="grid gap-6">
+      {loading ? (
+        <div className="flex justify-center p-8">Loading clients...</div>
+      ) : clients.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-12">
+            <Users className="h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-xl font-medium mb-2">No clients yet</h3>
+            <p className="text-gray-500 mb-4 text-center">
+              You haven't added any clients yet. Add your first client to get started.
+            </p>
+            <Button onClick={() => router.push("/admin/clients/new")}>Add Your First Client</Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {clients.map((client) => (
-            <Card key={client.id}>
-              <CardHeader className="flex flex-row items-start justify-between space-y-0">
+            <Card key={client.id} className="overflow-hidden">
+              <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-blue-600" />
+                  <div className="h-9 w-9 rounded-full bg-green-100 flex items-center justify-center">
+                    <span className="text-green-700 font-medium">
+                      {getInitials(client.company_name || client.contact_name)}
+                    </span>
                   </div>
                   <div>
-                    <CardTitle className="text-xl">{client.company_name}</CardTitle>
-                    <p className="text-muted-foreground mt-1">{client.contact_name}</p>
+                    <CardTitle>{client.company_name}</CardTitle>
+                    <CardDescription>
+                      {client.contact_name} • {client.contact_email}
+                    </CardDescription>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <Link href={`/admin/clients/${client.id}/edit`}>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                  </Link>
-                  <Link href={`/admin/clients/${client.id}/automations`}>
-                    <Button variant="outline" size="sm">
-                      Manage Automations
-                    </Button>
-                  </Link>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium">Contact Email</p>
-                    <p className="text-sm text-muted-foreground">{client.contact_email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Phone</p>
-                    <p className="text-sm text-muted-foreground">{client.phone || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Created</p>
-                    <p className="text-sm text-muted-foreground">{new Date(client.created_at).toLocaleDateString()}</p>
-                  </div>
+                <div className="text-sm text-gray-500">
+                  <p>Created: {new Date(client.created_at).toLocaleDateString()}</p>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" size="sm" onClick={() => router.push(`/admin/clients/${client.id}`)}>
+                    View Details
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
-        </div>
-      ) : (
-        <div className="text-center p-12 border rounded-lg">
-          <h3 className="text-lg font-medium mb-2">No clients yet</h3>
-          <p className="text-muted-foreground mb-4">Add your first client to get started</p>
-          <Link href="/admin/clients/new">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Client
-            </Button>
-          </Link>
         </div>
       )}
     </div>

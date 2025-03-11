@@ -1,63 +1,50 @@
 "use server"
 
-import { supabase } from "@/lib/supabase-client"
-import { revalidatePath } from "next/cache"
+import { supabaseAdmin } from "@/lib/supabase-admin"
 
-interface CreateClientData {
-  name: string
+type ClientFormData = {
+  companyName: string
   contactName: string
   email: string
+  phone: string
   password: string
 }
 
-export async function createClient(data: CreateClientData) {
-  // 1. Create the user account in Supabase Auth
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email: data.email,
-    password: data.password,
-    email_confirm: true, // Auto-confirm the email
-  })
+export async function createClient(formData: ClientFormData) {
+  try {
+    // 1. Create a new user in auth
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: formData.email,
+      password: formData.password,
+      email_confirm: true,
+      user_metadata: {
+        company_name: formData.companyName,
+        full_name: formData.contactName,
+        role: "client",
+      },
+    })
 
-  if (authError) {
-    console.error("Error creating user:", authError)
-    throw new Error(authError.message)
-  }
+    if (authError) throw authError
 
-  // 2. Create a team (client) record
-  const { data: teamData, error: teamError } = await supabase
-    .from("teams")
-    .insert([
+    // 2. Create profile for the new user
+    const { error: profileError } = await supabaseAdmin.from("profiles").insert([
       {
-        name: data.name,
-        created_by: authData.user.id,
+        id: authData.user.id,
+        company_name: formData.companyName,
+        contact_name: formData.contactName,
+        contact_email: formData.email,
+        phone: formData.phone,
+        role: "client",
+        is_admin: false,
       },
     ])
-    .select()
-    .single()
 
-  if (teamError) {
-    console.error("Error creating team:", teamError)
-    throw new Error(teamError.message)
+    if (profileError) throw profileError
+
+    return { success: true, userId: authData.user.id }
+  } catch (error: any) {
+    console.error("Error creating client:", error)
+    throw new Error(error.message || "Failed to create client")
   }
-
-  // 3. Update the user's profile with additional info
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      full_name: data.contactName,
-      team_id: teamData.id,
-      is_admin: false,
-    })
-    .eq("id", authData.user.id)
-
-  if (profileError) {
-    console.error("Error updating profile:", profileError)
-    throw new Error(profileError.message)
-  }
-
-  // Revalidate the clients page
-  revalidatePath("/admin/clients")
-
-  return { success: true }
 }
 
